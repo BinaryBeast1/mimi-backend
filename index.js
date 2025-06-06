@@ -19,6 +19,11 @@ const RegistroSchema = new mongoose.Schema({
   tiempo: Number,
   fecha: { type: Date, default: Date.now }
 });
+app.use((req, res, next) => {
+  console.log(`Petición recibida: ${req.method} ${req.url}`);
+  next();
+});
+
 
 app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
