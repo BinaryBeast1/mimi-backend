@@ -20,6 +20,11 @@ const RegistroSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now }
 });
 
+app.get('/', (req, res) => {
+  res.send('Servidor funcionando correctamente');
+});
+
+
 const Registro = mongoose.model('Registro', RegistroSchema);
 
 // 📥 Ruta POST para recibir datos del ESP32
