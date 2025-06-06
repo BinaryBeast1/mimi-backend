@@ -42,29 +42,23 @@ const Registro = mongoose.model('Registro', RegistroSchema);
 app.post('/nfc', async (req, res) => {
   try {
     const { uid, tiempo } = req.body;
-console.log('📩 Datos crudos recibidos:', req.body);
+    console.log('📩 Datos crudos recibidos:', req.body);
 
-// Fuerza conversión de "tiempo" a número
-const tiempoConvertido = Number(tiempo);
+    const tiempoConvertido = Number(tiempo);
 
-if (!uid || isNaN(tiempoConvertido)) {
-  console.log('❌ Datos inválidos - UID o tiempo incorrectos');
-  return res.status(400).json({ error: 'Datos inválidos' });
-}
+    if (!uid || isNaN(tiempoConvertido)) {
+      console.log('❌ Datos inválidos - UID o tiempo incorrectos');
+      return res.status(400).json({ error: 'Datos inválidos' });
+    }
 
-const nuevoRegistro = new Registro({ uid, tiempo: tiempoConvertido });
-const resultado = await nuevoRegistro.save();
-
-console.log('✅ Documento guardado en MongoDB:', resultado);
-  }
-
-    const nuevoRegistro = new Registro({ uid, tiempo });
+    const nuevoRegistro = new Registro({ uid, tiempo: tiempoConvertido });
     const resultado = await nuevoRegistro.save();
 
-    console.log('Documento guardado:', resultado);
+    console.log('✅ Documento guardado en MongoDB:', resultado);
     res.status(201).json({ message: 'Datos guardados con éxito.' });
+
   } catch (error) {
-    console.error('Error guardando los datos:', error);
+    console.error('❌ Error guardando los datos:', error);
     res.status(500).json({ error: 'Error guardando los datos' });
   }
 });
