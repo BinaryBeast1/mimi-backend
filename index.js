@@ -29,7 +29,6 @@ const Registro = mongoose.model('Registro', RegistroSchema);
 
 // 📥 Ruta POST para recibir datos del ESP32
 app.post('/nfc', async (req, res) => {
-  console.log("Datos recibidos:", req.body);
   try {
     const { uid, tiempo } = req.body;
     if (!uid || typeof tiempo !== 'number') {
@@ -37,12 +36,13 @@ app.post('/nfc', async (req, res) => {
     }
 
     const nuevoRegistro = new Registro({ uid, tiempo });
-    await nuevoRegistro.save();
+    const resultado = await nuevoRegistro.save();
 
-    console.log('Documento guardado con ID:', nuevoRegistro._id);
-    res.status(201).json({ message: 'Datos guardados' });
+    console.log('Documento guardado:', resultado); // <--- Aquí
+
+    res.status(201).json({ message: 'Datos guardados con éxito.' });
   } catch (error) {
-    console.error("Error guardando datos:", error);
+    console.error('Error guardando los datos:', error);
     res.status(500).json({ error: 'Error guardando los datos' });
   }
 });
