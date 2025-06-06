@@ -31,21 +31,24 @@ const Registro = mongoose.model('Registro', RegistroSchema);
 app.post('/nfc', async (req, res) => {
   try {
     const { uid, tiempo } = req.body;
+    console.log('Datos recibidos:', req.body);
+
     if (!uid || typeof tiempo !== 'number') {
+      console.log('Datos inválidos');
       return res.status(400).json({ error: 'Datos inválidos' });
     }
 
     const nuevoRegistro = new Registro({ uid, tiempo });
     const resultado = await nuevoRegistro.save();
 
-    console.log('Documento guardado:', resultado); // <--- Aquí
-
+    console.log('Documento guardado:', resultado);
     res.status(201).json({ message: 'Datos guardados con éxito.' });
   } catch (error) {
     console.error('Error guardando los datos:', error);
     res.status(500).json({ error: 'Error guardando los datos' });
   }
 });
+
 
 // 🚀 Inicia servidor
 const PORT = process.env.PORT || 3000;
