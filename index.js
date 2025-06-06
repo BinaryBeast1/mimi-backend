@@ -29,6 +29,12 @@ app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
 });
 
+app.get('/registros', async (req, res) => {
+  const registros = await Registro.find().sort({ fecha: -1 }).limit(10);
+  res.json(registros);
+});
+
+
 
 const Registro = mongoose.model('Registro', RegistroSchema);
 
@@ -36,12 +42,21 @@ const Registro = mongoose.model('Registro', RegistroSchema);
 app.post('/nfc', async (req, res) => {
   try {
     const { uid, tiempo } = req.body;
-    console.log('Datos recibidos:', req.body);
+console.log('📩 Datos crudos recibidos:', req.body);
 
-    if (!uid || typeof tiempo !== 'number') {
-      console.log('Datos inválidos');
-      return res.status(400).json({ error: 'Datos inválidos' });
-    }
+// Fuerza conversión de "tiempo" a número
+const tiempoConvertido = Number(tiempo);
+
+if (!uid || isNaN(tiempoConvertido)) {
+  console.log('❌ Datos inválidos - UID o tiempo incorrectos');
+  return res.status(400).json({ error: 'Datos inválidos' });
+}
+
+const nuevoRegistro = new Registro({ uid, tiempo: tiempoConvertido });
+const resultado = await nuevoRegistro.save();
+
+console.log('✅ Documento guardado en MongoDB:', resultado);
+  }
 
     const nuevoRegistro = new Registro({ uid, tiempo });
     const resultado = await nuevoRegistro.save();
