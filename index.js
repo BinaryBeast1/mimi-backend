@@ -1,71 +1,63 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
+const { Pool } = require('pg');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 💾 Conexión a MongoDB
-mongoose.connect('mongodb+srv://mimi_user:5Ff5vS1eNPgRhLKg@cluster0.prnyzcd.mongodb.net/nfc_db?retryWrites=true&w=majority', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log('✅ Conectado a MongoDB'))
-  .catch(err => console.error('❌ Error de conexión', err));
-
-// 📄 Esquema y modelo
-const RegistroSchema = new mongoose.Schema({
-  uid: String,
-  tiempo: Number,
-  fecha: { type: Date, default: Date.now }
+// 🎯 Configura tu conexión a Neon
+const pool = new Pool({
+  connectionString: 'postgresql://neondb_owner:npg_Bg7MYzEc8IXU@ep-lucky-tooth-a8pi5e2w-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require'',
 });
+
+// Middleware para mostrar las peticiones
 app.use((req, res, next) => {
   console.log(`Petición recibida: ${req.method} ${req.url}`);
   next();
 });
 
-
 app.get('/', (req, res) => {
-  res.send('Servidor funcionando correctamente');
+  res.send('Servidor funcionando con PostgreSQL (Neon.tech)');
 });
 
-app.get('/registros', async (req, res) => {
-  const registros = await Registro.find().sort({ fecha: -1 }).limit(10);
-  res.json(registros);
-});
-
-
-
-const Registro = mongoose.model('Registro', RegistroSchema);
-
-// 📥 Ruta POST para recibir datos del ESP32
+// 📥 Ruta POST para guardar datos
 app.post('/nfc', async (req, res) => {
+  const { uid, tiempo } = req.body;
+
+  if (!uid || isNaN(Number(tiempo))) {
+    return res.status(400).json({ error: 'Datos inválidos' });
+  }
+
   try {
-    const { uid, tiempo } = req.body;
-    console.log('📩 Datos crudos recibidos:', req.body);
-
-    const tiempoConvertido = Number(tiempo);
-
-    if (!uid || isNaN(tiempoConvertido)) {
-      console.log('❌ Datos inválidos - UID o tiempo incorrectos');
-      return res.status(400).json({ error: 'Datos inválidos' });
-    }
-
-    const nuevoRegistro = new Registro({ uid, tiempo: tiempoConvertido });
-    const resultado = await nuevoRegistro.save();
-
-    console.log('✅ Documento guardado en MongoDB:', resultado);
+    const resultado = await pool.query(
+      'INSERT INTO registros (uid, tiempo) VALUES ($1, $2) RETURNING *',
+      [uid, Number(tiempo)]
+    );
+    console.log('✅ Registro guardado:', resultado.rows[0]);
     res.status(201).json({ message: 'Datos guardados con éxito.' });
-
   } catch (error) {
-    console.error('❌ Error guardando los datos:', error);
-    res.status(500).json({ error: 'Error guardando los datos' });
+    console.error('❌ Error al guardar en PostgreSQL:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
   }
 });
 
+// 📤 Ruta GET para obtener últimos 10 registros
+app.get('/registros', async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      'SELECT * FROM registros ORDER BY fecha DESC LIMIT 10'
+    );
+    res.json(resultado.rows);
+  } catch (error) {
+    console.error('❌ Error al obtener registros:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
 
-// 🚀 Inicia servidor
+// 🚀 Inicia el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+
