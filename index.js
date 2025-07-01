@@ -8,7 +8,7 @@ app.use(express.json());
 
 // 🎯 Configura tu conexión a Neon
 const pool = new Pool({
-  connectionString: 'postgresql://neondb_owner:npg_Bg7MYzEc8IXU@ep-lucky-tooth-a8pi5e2w-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require'',
+  connectionString: 'postgresql://neondb_owner:npg_Bg7MYzEc8IXU@ep-lucky-tooth-a8pi5e2w-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require',
 });
 
 // Middleware para mostrar las peticiones
